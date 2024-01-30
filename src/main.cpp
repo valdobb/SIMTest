@@ -8,7 +8,7 @@
 
 #define DUMP_AT_COMMANDS
 
-#define SMS_TARGET  "xxxxxxxxxxx"
+#define SMS_TARGET  "453067956"
 
 #include <SPI.h>
 #include <Wire.h>
@@ -25,6 +25,9 @@ TinyGsm modem(debugger);
 TinyGsm modem(SerialAT);
 #endif
 
+#define BMP180_I2C_SDA 32
+#define BMP180_I2C_SCL 33
+
 
 #define UART_BAUD           9600
 #define PIN_DTR             25
@@ -32,6 +35,7 @@ TinyGsm modem(SerialAT);
 #define PIN_RX              26
 #define PWR_PIN             4
 
+TwoWire I2CBME = TwoWire(0);
 Adafruit_BMP085 bmp180;
 
 void modemInfo(){
@@ -62,7 +66,6 @@ void modemPowerOn()
     digitalWrite(PWR_PIN, HIGH);
 }
 
-
 void modemPowerOff()
 {
     pinMode(PWR_PIN, OUTPUT);
@@ -71,7 +74,6 @@ void modemPowerOff()
     digitalWrite(PWR_PIN, HIGH);
 }
 
-
 void ReadTemperature() {
   float temperatureC = bmp180.readTemperature();
   String TempString = "Temp: " + String(temperatureC, 2) + "°C";
@@ -79,17 +81,22 @@ void ReadTemperature() {
 }
 
 
-
-
 void setup() {
-  Serial.begin(9600);
-  SerialMon.begin(9600);
+
+  I2CBME.begin(BMP180_I2C_SDA, BMP180_I2C_SCL, 400000);
+  bmp180.begin(0x77, &I2CBME);
   float temperatureC = bmp180.readTemperature();
   String TempString = "Temp: " + String(temperatureC, 2) + "°C";
+  Serial.println(TempString);
+  SerialMon.println("BMP180 initialized");
   delay(5000);
-  modemPowerOn();
+
+  SerialMon.begin(9600);
   SerialAT.begin(UART_BAUD, SERIAL_8N1, PIN_RX, PIN_TX);
+  modemPowerOn();
+  SerialMon.println("SerialAT initialized");
   delay(10000);
+  
   modem.getModemInfo();
   String smsMessage = "BattVoltage: " + String(modem.getBattVoltage()) + " mV\n" +
                     "Operator: " + modem.getOperator() + "\n" +
@@ -99,11 +106,9 @@ void setup() {
                     "IMSI: " + modem.getIMSI()+ "\n" +
                     TempString;
 
-
-
-
-
   modem.sendSMS(SMS_TARGET, smsMessage);
+
+  modemPowerOff();
 }
 
 void loop() {

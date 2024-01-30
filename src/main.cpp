@@ -8,7 +8,7 @@
 
 #define DUMP_AT_COMMANDS
 
-#define SMS_TARGET  "+48501508680"
+#define SMS_TARGET  "xxxxxxxxxxx"
 
 #include <SPI.h>
 #include <Wire.h>
@@ -72,6 +72,11 @@ void modemPowerOff()
 }
 
 
+void ReadTemperature() {
+  float temperatureC = bmp180.readTemperature();
+  String TempString = "Temp: " + String(temperatureC, 2) + "°C";
+  Serial.println(TempString);
+}
 
 
 
@@ -79,6 +84,9 @@ void modemPowerOff()
 void setup() {
   Serial.begin(9600);
   SerialMon.begin(9600);
+  float temperatureC = bmp180.readTemperature();
+  String TempString = "Temp: " + String(temperatureC, 2) + "°C";
+  delay(5000);
   modemPowerOn();
   SerialAT.begin(UART_BAUD, SERIAL_8N1, PIN_RX, PIN_TX);
   delay(10000);
@@ -88,7 +96,8 @@ void setup() {
                     "Registration Status: " + modem.getRegistrationStatus() + "\n" +
                     "Signal Quality: " + modem.getSignalQuality() + "\n" +
                     "IMEI: " + modem.getIMEI() + "\n" +
-                    "IMSI: " + modem.getIMSI();
+                    "IMSI: " + modem.getIMSI()+ "\n" +
+                    TempString;
 
 
 

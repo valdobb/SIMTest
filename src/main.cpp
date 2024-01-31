@@ -38,6 +38,16 @@ TinyGsm modem(SerialAT);
 TwoWire I2CBME = TwoWire(0);
 Adafruit_BMP085 bmp180;
 
+
+void czas() {
+Serial.println("Pozyskiwanie czasu NTP");
+modem.sendAT("+sapbr=1,1");
+modem.sendAT("+CNTP= time.cloudflare.com,4,1,1");
+delay(3000);
+modem.sendAT("+cnact?");
+modem.sendAT("+CNTP");
+}
+
 void modemInfo(){
 modem.getBattVoltage();
 delay(1000);
@@ -56,6 +66,8 @@ delay(1000);
 modem.getRegistrationStatus();
 delay(1000);
 modem.getOperator();
+delay(1000);
+modem.sendAT("+CCLK?");
 }
 
 void modemPowerOn()
@@ -81,6 +93,10 @@ void ReadTemperature() {
 }
 
 
+//modem.sendSMS(SMS_TARGET, smsMessage);
+
+
+
 void setup() {
 
   I2CBME.begin(BMP180_I2C_SDA, BMP180_I2C_SCL, 400000);
@@ -95,7 +111,8 @@ void setup() {
   SerialAT.begin(UART_BAUD, SERIAL_8N1, PIN_RX, PIN_TX);
   modemPowerOn();
   SerialMon.println("SerialAT initialized");
-  //delay(10000);
+  delay(10000);
+
   
   modem.getModemInfo();
   String smsMessage = "BattVoltage: " + String(modem.getBattVoltage()) + " mV\n" +
@@ -103,10 +120,14 @@ void setup() {
                     "Registration Status: " + modem.getRegistrationStatus() + "\n" +
                     "Signal Quality: " + modem.getSignalQuality() + "\n" +
                     "IMEI: " + modem.getIMEI() + "\n" +
-                    "IMSI: " + modem.getIMSI()+ "\n" +
+                    "IMSI: " + modem.getIMSI() + "\n" +
                     TempString;
 
-  //modem.sendSMS(SMS_TARGET, smsMessage);
+ modem.sendAT("+CCLK?");
+ czas();
+
+//TIME
+
 
   
 }

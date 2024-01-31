@@ -8,7 +8,7 @@
 
 #define DUMP_AT_COMMANDS
 
-#define SMS_TARGET  "453067956"
+#define SMS_TARGET  "45xxxxxxxxxxxxxxxxx"
 
 #include <SPI.h>
 #include <Wire.h>
@@ -95,7 +95,7 @@ void setup() {
   SerialAT.begin(UART_BAUD, SERIAL_8N1, PIN_RX, PIN_TX);
   modemPowerOn();
   SerialMon.println("SerialAT initialized");
-  delay(10000);
+  //delay(10000);
   
   modem.getModemInfo();
   String smsMessage = "BattVoltage: " + String(modem.getBattVoltage()) + " mV\n" +
@@ -106,11 +106,16 @@ void setup() {
                     "IMSI: " + modem.getIMSI()+ "\n" +
                     TempString;
 
-  modem.sendSMS(SMS_TARGET, smsMessage);
+  //modem.sendSMS(SMS_TARGET, smsMessage);
 
-  modemPowerOff();
+  
 }
 
 void loop() {
-  delay(5);
+  while (SerialAT.available()) {
+        SerialMon.write(SerialAT.read());
+    }
+    while (SerialMon.available()) {
+        SerialAT.write(SerialMon.read());
+    }
 }

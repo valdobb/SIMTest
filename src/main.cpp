@@ -41,10 +41,12 @@ Adafruit_BMP085 bmp180;
 
 void czas() {
 Serial.println("Pozyskiwanie czasu NTP");
+modem.sendAT("+CNTP= \"194.146.251.100\",4,1,1");
+delay(1000);
+modem.sendAT("+CNACT=1,\"internet\"");
+delay(1000);
 modem.sendAT("+sapbr=1,1");
-modem.sendAT("+CNTP= time.cloudflare.com,4,1,1");
 delay(3000);
-modem.sendAT("+cnact?");
 modem.sendAT("+CNTP");
 }
 

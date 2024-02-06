@@ -25,6 +25,7 @@ TinyGsm modem(debugger);
 TinyGsm modem(SerialAT);
 #endif
 
+
 #define BMP180_I2C_SDA 32
 #define BMP180_I2C_SCL 33
 
@@ -39,16 +40,18 @@ TwoWire I2CBME = TwoWire(0);
 Adafruit_BMP085 bmp180;
 
 
+
 void czas() {
-Serial.println("Pozyskiwanie czasu NTP");
+Serial.println("Acquire NTP Time");
 modem.sendAT("+CNTP= \"194.146.251.100\",4,1,1");
-delay(1000);
+modem.waitResponse();
 modem.sendAT("+CNACT=1,\"internet\"");
-delay(1000);
+modem.waitResponse();
 modem.sendAT("+sapbr=1,1");
-delay(3000);
+modem.waitResponse();
 modem.sendAT("+CNTP");
 }
+
 
 void modemInfo(){
 modem.getBattVoltage();
@@ -99,39 +102,47 @@ void ReadTemperature() {
 
 
 
+
+
 void setup() {
 
   I2CBME.begin(BMP180_I2C_SDA, BMP180_I2C_SCL, 400000);
   bmp180.begin(0x77, &I2CBME);
-  float temperatureC = bmp180.readTemperature();
-  String TempString = "Temp: " + String(temperatureC, 2) + "°C";
-  Serial.println(TempString);
-  SerialMon.println("BMP180 initialized");
-  delay(5000);
-
+ 
   SerialMon.begin(9600);
   SerialAT.begin(UART_BAUD, SERIAL_8N1, PIN_RX, PIN_TX);
+
+
+  //TEMP
+  SerialMon.println("BMP180 initialized");
+  float temperatureC = bmp180.readTemperature();
+  String TempString = "Temp: " + String(temperatureC, 2) + "°C";
+  SerialMon.println(TempString);
+  
+  delay(5000);
+
+  
   modemPowerOn();
   SerialMon.println("SerialAT initialized");
   delay(10000);
 
+  modemInfo();
   
-  modem.getModemInfo();
-  String smsMessage = "BattVoltage: " + String(modem.getBattVoltage()) + " mV\n" +
+  /* String smsMessage = "BattVoltage: " + String(modem.getBattVoltage()) + " mV\n" +
                     "Operator: " + modem.getOperator() + "\n" +
                     "Registration Status: " + modem.getRegistrationStatus() + "\n" +
                     "Signal Quality: " + modem.getSignalQuality() + "\n" +
                     "IMEI: " + modem.getIMEI() + "\n" +
                     "IMSI: " + modem.getIMSI() + "\n" +
-                    TempString;
+                    TempString; 
+  */
 
- modem.sendAT("+CCLK?");
+ String time = "Time from Modem: "
+ 
+ delay(1000);
  czas();
-
 //TIME
 
-
-  
 }
 
 void loop() {

@@ -15,6 +15,8 @@
 #include <TinyGsmClient.h>
 #include <Adafruit_BMP085.h>
 #include <Ticker.h>
+#include <ArduinoHttpClient.h>
+#include <PubSubClient.h>
 
 #ifdef DUMP_AT_COMMANDS
 
@@ -36,9 +38,24 @@ TinyGsm modem(SerialAT);
 #define PIN_RX              26
 #define PWR_PIN             4
 
+
+char apn[]  = "internet";
+char user[] = "";
+char pass[] = "";
+
+const char* broker = "broker.hivemq.com"; 
+
+const char* topicTemperature = "esp/temperature";
+
+const char* topicOutput1 = "esp/output1";
+
+
+
 TwoWire I2CBME = TwoWire(0);
 Adafruit_BMP085 bmp180;
 
+TinyGsmClient client(modem);
+PubSubClient mqtt(client);
 
 
 void czas() {
@@ -114,10 +131,10 @@ void setup() {
 
 
   //TEMP
-  SerialMon.println("BMP180 initialized");
-  float temperatureC = bmp180.readTemperature();
-  String TempString = "Temp: " + String(temperatureC, 2) + "°C";
-  SerialMon.println(TempString);
+  //SerialMon.println("BMP180 initialized");
+  //float temperatureC = bmp180.readTemperature();
+  //String tempString = "Temp: " + String(temperatureC, 2) + "°C";
+  //SerialMon.println(tempString);
   
   delay(5000);
 
@@ -126,7 +143,19 @@ void setup() {
   SerialMon.println("SerialAT initialized");
   delay(10000);
 
-  modemInfo();
+  modem.gprsConnect(apn, user, pass);
+  delay(100000);
+
+  mqtt.setServer(broker, 1883);
+
+  mqtt.connect("GsmClientN");
+
+  delay(10000);
+
+  mqtt.subscribe(topicOutput1);
+
+ //modemInfo();
+
   
   /* String smsMessage = "BattVoltage: " + String(modem.getBattVoltage()) + " mV\n" +
                     "Operator: " + modem.getOperator() + "\n" +
@@ -137,15 +166,26 @@ void setup() {
                     TempString; 
   */
 
- String time = "Time from Modem: "
  
  delay(1000);
- czas();
+ // czas();
 //TIME
 
 }
 
 void loop() {
+
+  float temperatureC = bmp180.readTemperature();
+  String tempString_serial = "Temp: " + String(temperatureC, 2) + "°C";
+  SerialMon.println(tempString_serial);
+
+  char tempString[8];
+  dtostrf(temperatureC, 1, 2, tempString);
+
+  mqtt.publish(topicTemperature, tempString);
+
+  delay(3000);
+
   while (SerialAT.available()) {
         SerialMon.write(SerialAT.read());
     }

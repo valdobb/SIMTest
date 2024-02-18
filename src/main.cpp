@@ -8,7 +8,7 @@
 
 #define DUMP_AT_COMMANDS
 
-#define SMS_TARGET  "45xxxxxxxxxxxxxxxxx"
+#define SMS_TARGET  "48502439620"
 
 #include <SPI.h>
 #include <Wire.h>
@@ -43,11 +43,11 @@ char apn[]  = "internet";
 char user[] = "";
 char pass[] = "";
 
-const char* broker = "broker.hivemq.com"; 
+//const char* broker = "broker.hivemq.com"; 
 
-const char* topicTemperature = "esp/temperature";
+//const char* topicTemperature = "esp/temperature";
 
-const char* topicOutput1 = "esp/output1";
+//const char* topicOutput1 = "esp/output1";
 
 
 
@@ -55,7 +55,7 @@ TwoWire I2CBME = TwoWire(0);
 Adafruit_BMP085 bmp180;
 
 TinyGsmClient client(modem);
-PubSubClient mqtt(client);
+//PubSubClient mqtt(client);
 
 
 void czas() {
@@ -115,7 +115,7 @@ void ReadTemperature() {
 }
 
 
-//modem.sendSMS(SMS_TARGET, smsMessage);
+
 
 
 
@@ -131,40 +131,45 @@ void setup() {
 
 
   //TEMP
-  //SerialMon.println("BMP180 initialized");
-  //float temperatureC = bmp180.readTemperature();
-  //String tempString = "Temp: " + String(temperatureC, 2) + "°C";
-  //SerialMon.println(tempString);
+  SerialMon.println("BMP180 initialized");
+  float temperatureC = bmp180.readTemperature();
+  String tempString = "Temp: " + String(temperatureC, 2) + "°C";
+  SerialMon.println(tempString);
   
   delay(5000);
 
   
   modemPowerOn();
   SerialMon.println("SerialAT initialized");
-  delay(10000);
-
-  modem.gprsConnect(apn, user, pass);
-  delay(100000);
-
-  mqtt.setServer(broker, 1883);
-
-  mqtt.connect("GsmClientN");
-
-  delay(10000);
-
-  mqtt.subscribe(topicOutput1);
-
- //modemInfo();
+  delay(5000);
 
   
-  /* String smsMessage = "BattVoltage: " + String(modem.getBattVoltage()) + " mV\n" +
+
+  /*modem.gprsConnect(apn, user, pass);
+  delay(100000);*/
+
+  //mqtt.setServer(broker, 1883);
+
+  //mqtt.connect("GsmClientN");
+
+  //delay(10000);
+
+  //mqtt.subscribe(topicOutput1);
+
+ modemInfo();
+
+  
+  String smsMessage = "BattVoltage: " + String(modem.getBattVoltage()) + " mV\n" +
                     "Operator: " + modem.getOperator() + "\n" +
                     "Registration Status: " + modem.getRegistrationStatus() + "\n" +
                     "Signal Quality: " + modem.getSignalQuality() + "\n" +
                     "IMEI: " + modem.getIMEI() + "\n" +
                     "IMSI: " + modem.getIMSI() + "\n" +
-                    TempString; 
-  */
+                    tempString + "\n" +
+                    "Kocham Cię Mocno";
+
+                    
+modem.sendSMS(SMS_TARGET, smsMessage);  
 
  
  delay(1000);
@@ -182,7 +187,7 @@ void loop() {
   char tempString[8];
   dtostrf(temperatureC, 1, 2, tempString);
 
-  mqtt.publish(topicTemperature, tempString);
+  //mqtt.publish(topicTemperature, tempString);
 
   delay(3000);
 

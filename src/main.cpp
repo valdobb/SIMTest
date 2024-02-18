@@ -8,7 +8,7 @@
 
 #define DUMP_AT_COMMANDS
 
-#define SMS_TARGET  "48502439620"
+#define SMS_TARGET  "44xxxx"
 
 #include <SPI.h>
 #include <Wire.h>
